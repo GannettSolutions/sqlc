@@ -49,6 +49,9 @@ func (a *analyzer) projectTarget(rt *ast.ResTarget) error {
 	col.DataType, col.IsArray = a.typeNameOf(t)
 	col.Type = a.typeExprOf(t)
 	a.decorateSource(&col, t.sourceAttributeOID, t.sourceTableAlias)
+	if t.declType != "" {
+		col.DeclType = t.declType
+	}
 	if rt.Name == nil || *rt.Name == "" {
 		// A column whose own name is dotted, as ClickHouse's n.a is, is
 		// reported under that name rather than its last part.

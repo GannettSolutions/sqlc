@@ -82,6 +82,17 @@ const FlagQualifyDuplicateColumns = "columns.qualify_duplicates"
 // without its schema.
 const FlagDefaultSchema = "schema.default"
 
+// DefaultSchema returns the schema the active dialect assigns to unqualified
+// objects. PostgreSQL-compatible catalogs use public when none is configured.
+func (c *Catalog) DefaultSchema() string {
+	if c.dialectOID != 0 {
+		if name, _ := c.DialectFlag(c.dialectOID, FlagDefaultSchema); name != "" {
+			return name
+		}
+	}
+	return "public"
+}
+
 // FlagCastCategories holds the categories whose types are all implicitly
 // castable to one another, as the dialect's seed declared them, so that a type
 // arriving after the seed — an extension's, say — can join its category.

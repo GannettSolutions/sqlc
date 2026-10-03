@@ -19,7 +19,9 @@ type exprType struct {
 	// the catalog does not hold. Analysis never adds a type: it reports the
 	// expression the query used and carries on, so a query can be analyzed
 	// against a catalog it cannot write to.
-	expr               *core.TypeExpr
+	expr *core.TypeExpr
+	// declType preserves an explicit cast target before alias resolution.
+	declType           string
 	nullable           bool
 	sourceClassOID     int64
 	sourceAttributeOID int64
@@ -237,6 +239,7 @@ func (a *analyzer) inferParam(p *ast.ParamRef, t exprType) {
 				TableAlias: t.sourceTableAlias,
 				Column:     ad.Column,
 			}
+			cur.DeclType = ad.DeclType
 		}
 	}
 	a.params[p.Number] = cur
@@ -1025,6 +1028,7 @@ func (a *analyzer) typeTypeCast(c *ast.TypeCast) (exprType, error) {
 		return exprType{}, fmt.Errorf("cast: missing target type")
 	}
 	t := a.lookupType(target)
+	t.declType = target.String()
 	// A cast is how a query says what an otherwise untyped placeholder
 	// holds, and a placeholder so typed is not null unless the type says
 	// otherwise, as ClickHouse's Nullable(String) does. Anything else

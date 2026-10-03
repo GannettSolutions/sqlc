@@ -6,6 +6,11 @@ WHERE id = $1 LIMIT 1;
 SELECT * FROM authors
 ORDER BY name;
 
+-- name: FindAuthorsByName :many
+SELECT * FROM authors
+WHERE name = sqlc.arg(name)
+ORDER BY id;
+
 -- name: CreateAuthor :one
 INSERT INTO authors (
   name, bio

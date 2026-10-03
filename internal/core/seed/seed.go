@@ -915,7 +915,7 @@ func (b *builder) addRelation(rel Relation) error {
 // time it is named. A relation with no schema belongs to the default one.
 func (b *builder) namespace(schema string) (int64, error) {
 	if schema == "" {
-		schema = "public"
+		schema = b.cat.DefaultSchema()
 	}
 	if oid, ok := b.namespaces[schema]; ok {
 		return oid, nil

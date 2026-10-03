@@ -235,9 +235,10 @@ func (c *Catalog) ClassColumns(classOID int64) ([]ClassColumn, error) {
 }
 
 type CodegenColumn struct {
-	Name    string
-	TypeOID int64
-	NotNull bool
+	Name     string
+	TypeOID  int64
+	NotNull  bool
+	DeclType string
 }
 
 func (c *Catalog) ClassCodegenColumns(classOID int64) ([]CodegenColumn, error) {
@@ -248,9 +249,10 @@ func (c *Catalog) ClassCodegenColumns(classOID int64) ([]CodegenColumn, error) {
 	out := make([]CodegenColumn, 0, len(rows))
 	for _, r := range rows {
 		out = append(out, CodegenColumn{
-			Name:    r.ColumnName,
-			TypeOID: r.TypeOid,
-			NotNull: r.NotNull != 0,
+			Name:     r.ColumnName,
+			TypeOID:  r.TypeOid,
+			NotNull:  r.NotNull != 0,
+			DeclType: r.DeclType,
 		})
 	}
 	return out, nil

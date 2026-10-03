@@ -1,0 +1,29 @@
+version: "2"
+sql:
+  - engine: duckdb
+    schema: schema.sql
+    queries: query.sql
+    gen:
+      go:
+        package: db
+        out: go
+        sql_package: database/sql
+        emit_json_tags: true
+        emit_prepared_queries: true
+        emit_interface: true
+        emit_pointers_for_null_types: true
+        emit_exact_table_names: false
+        emit_empty_slices: true
+        rename:
+          data_json: DataJSON
+          preferences_json: PreferencesJSON
+        overrides:
+          - db_type: json
+            go_type:
+              import: encoding/json
+              type: RawMessage
+          - db_type: json
+            nullable: true
+            go_type:
+              import: encoding/json
+              type: RawMessage

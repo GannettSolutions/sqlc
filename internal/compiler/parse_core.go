@@ -102,9 +102,13 @@ func (c *Compiler) parseQueryCore(raw *ast.RawStmt, src string, pre *preprocess.
 }
 
 func coreColumn(c core.Column) *Column {
+	dataType := c.DataType
+	if c.DeclType != "" {
+		dataType = core.ParseTypeExpr(c.DeclType).Innermost().Name
+	}
 	col := &Column{
 		Name:     c.Name,
-		DataType: c.DataType,
+		DataType: dataType,
 		NotNull:  c.NotNull,
 		IsArray:  c.IsArray,
 		TypeExpr: c.Type,
@@ -152,9 +156,13 @@ func placeholderNames(root ast.Node) map[int]string {
 }
 
 func coreParamColumn(p core.Parameter, params *named.ParamSet) *Column {
+	dataType := p.DataType
+	if p.DeclType != "" {
+		dataType = core.ParseTypeExpr(p.DeclType).Innermost().Name
+	}
 	col := &Column{
 		Name:     p.Name,
-		DataType: p.DataType,
+		DataType: dataType,
 		NotNull:  p.NotNull,
 		IsArray:  p.IsArray,
 		TypeExpr: p.Type,

@@ -108,13 +108,17 @@ func applyView(cat *core.Catalog, rel *ast.RangeVar, aliases *ast.List, query as
 				return err
 			}
 		}
+		declType := col.DeclType
+		if declType == "" {
+			declType = col.DataType
+		}
 		if err := cat.CreateAttributeSpec(core.AttributeSpec{
 			ClassOID: classOID,
 			Name:     colName,
 			TypeOID:  typeOID,
 			Num:      i + 1,
 			NotNull:  col.NotNull,
-			DeclType: col.DataType,
+			DeclType: declType,
 		}); err != nil {
 			return fmt.Errorf("view %s.%s: %w", name, colName, err)
 		}
@@ -189,7 +193,7 @@ func applyDropTable(cat *core.Catalog, stmt *ast.DropTableStmt) error {
 		if tn == nil {
 			continue
 		}
-		nsOID, err := cat.NamespaceOID(nsName(tn.Schema))
+		nsOID, err := cat.NamespaceOID(nsName(cat, tn.Schema))
 		if err != nil {
 			if stmt.IfExists {
 				continue
@@ -332,7 +336,7 @@ func lookupClass(cat *core.Catalog, table *ast.TableName) (int64, error) {
 	if table == nil {
 		return 0, fmt.Errorf("missing table name")
 	}
-	nsOID, err := cat.NamespaceOID(nsName(table.Schema))
+	nsOID, err := cat.NamespaceOID(nsName(cat, table.Schema))
 	if err != nil {
 		return 0, err
 	}
@@ -526,15 +530,15 @@ func applyCreateFunction(cat *core.Catalog, stmt *ast.CreateFunctionStmt) error 
 	return err
 }
 
-func nsName(schema string) string {
+func nsName(cat *core.Catalog, schema string) string {
 	if schema == "" {
-		return "public"
+		return cat.DefaultSchema()
 	}
 	return schema
 }
 
 func resolveOrCreateNamespace(cat *core.Catalog, schema string) (int64, error) {
-	name := nsName(schema)
+	name := nsName(cat, schema)
 	if oid, err := cat.NamespaceOID(name); err == nil {
 		return oid, nil
 	}

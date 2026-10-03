@@ -8,7 +8,7 @@ import (
 type Style int
 
 const (
-	// StyleDollar numbers parameters as $1, $2, ... (PostgreSQL)
+	// StyleDollar numbers parameters as $1, $2, ... (PostgreSQL and DuckDB)
 	StyleDollar Style = iota
 	// StyleQuestion uses an unnumbered ? for every parameter (MySQL)
 	StyleQuestion
@@ -87,6 +87,11 @@ var dialects = map[config.Engine]Dialect{
 		Question:  true,
 		Backtick:  true,
 		Backslash: true,
+	},
+	config.EngineDuckDB: {
+		Style:        StyleDollar,
+		DollarNumber: true,
+		Question:     true,
 	},
 	// ClickHouse binds with an unnumbered ?, like MySQL, and its identifiers
 	// keep their case.

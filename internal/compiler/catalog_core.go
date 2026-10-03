@@ -14,7 +14,7 @@ import (
 // their columns to build models, and none of the types, functions or
 // operators the core catalog also holds.
 func coreResultCatalog(c *core.Catalog) (*catalog.Catalog, error) {
-	cat := catalog.New("public")
+	cat := catalog.New(c.DefaultSchema())
 	namespaces, err := c.Namespaces()
 	if err != nil {
 		return nil, err
@@ -40,9 +40,13 @@ func coreResultCatalog(c *core.Catalog) (*catalog.Catalog, error) {
 					return nil, err
 				}
 				inner := expr.Innermost()
+				dataType := inner.Name
+				if col.DeclType != "" {
+					dataType = core.ParseTypeExpr(col.DeclType).Innermost().Name
+				}
 				column := &catalog.Column{
 					Name:       col.Name,
-					Type:       ast.TypeName{Name: strings.TrimSuffix(inner.Name, " unsigned")},
+					Type:       ast.TypeName{Name: strings.TrimSuffix(dataType, " unsigned")},
 					IsNotNull:  col.NotNull,
 					IsArray:    expr.IsArray(),
 					ArrayDims:  expr.ArrayDims(),

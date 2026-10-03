@@ -692,7 +692,7 @@ func (q *Queries) FindProcsInNamespaces(ctx context.Context, arg FindProcsInName
 }
 
 const listClassColumns = `-- name: ListClassColumns :many
-SELECT a.name AS column_name, a.type_oid, a.not_null
+SELECT a.name AS column_name, a.type_oid, a.not_null, a.decl_type
 FROM sql_attribute a
 JOIN sql_type t ON t.oid = a.type_oid
 WHERE a.class_oid = ? AND a.hidden = 0
@@ -703,6 +703,7 @@ type ListClassColumnsRow struct {
 	ColumnName string
 	TypeOid    int64
 	NotNull    int64
+	DeclType   string
 }
 
 func (q *Queries) ListClassColumns(ctx context.Context, classOid int64) ([]ListClassColumnsRow, error) {
@@ -714,7 +715,12 @@ func (q *Queries) ListClassColumns(ctx context.Context, classOid int64) ([]ListC
 	var items []ListClassColumnsRow
 	for rows.Next() {
 		var i ListClassColumnsRow
-		if err := rows.Scan(&i.ColumnName, &i.TypeOid, &i.NotNull); err != nil {
+		if err := rows.Scan(
+			&i.ColumnName,
+			&i.TypeOid,
+			&i.NotNull,
+			&i.DeclType,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

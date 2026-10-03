@@ -57,7 +57,18 @@ func TestAuthors(t *testing.T) {
 	if fetchedAuthor.Name != "Brian Kernighan" || !fetchedAuthor.Bio.Valid {
 		t.Fatalf("unexpected author: %+v", fetchedAuthor)
 	}
+	if len(fetchedAuthor.DataJSON) != 0 || len(fetchedAuthor.PreferencesJSON) != 0 {
+		t.Fatalf("unexpected JSON defaults: %+v", fetchedAuthor)
+	}
 	t.Log(fetchedAuthor)
+
+	authors, err = db.FindAuthorsByName(ctx, "Brian Kernighan")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(authors) != 1 || authors[0].ID != insertedAuthor.ID {
+		t.Fatalf("unexpected authors: %+v", authors)
+	}
 
 	// delete the author
 	if err := db.DeleteAuthor(ctx, insertedAuthor.ID); err != nil {

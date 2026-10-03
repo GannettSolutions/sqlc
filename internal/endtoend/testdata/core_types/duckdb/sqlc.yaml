@@ -8,3 +8,8 @@ sql:
         package: "querytest"
         out: "go"
         sql_package: "database/sql"
+        overrides:
+          - column: main.things.doc
+            go_type:
+              import: encoding/json
+              type: RawMessage

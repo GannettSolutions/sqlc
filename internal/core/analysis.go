@@ -74,6 +74,7 @@ type Parameter struct {
 	Number   int           `json:"number"`
 	Name     string        `json:"name,omitempty"`
 	DataType string        `json:"data_type,omitempty"`
+	DeclType string        `json:"decl_type,omitempty"`
 	Type     *TypeExpr     `json:"type,omitempty"`
 	TypeOID  int64         `json:"type_oid,omitempty"`
 	NotNull  bool          `json:"not_null"`

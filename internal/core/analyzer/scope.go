@@ -171,7 +171,7 @@ func (a *analyzer) bindRangeVar(rv *ast.RangeVar) (scopeRel, error) {
 		schema = *rv.Schemaname
 	}
 	if schema == "" {
-		schema = "public"
+		schema = a.cat.DefaultSchema()
 	}
 	nsOID, err := a.cat.NamespaceOID(schema)
 	if err != nil {

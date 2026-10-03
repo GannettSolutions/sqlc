@@ -1,10 +1,17 @@
-.PHONY: build build-endtoend test test-ci test-examples test-endtoend test-goldeneye start psql mysqlsh proto
+.PHONY: build build-endtoend test test-ci test-examples test-endtoend test-goldeneye start psql mysqlsh proto install-dev
+
+DEV_BRANCH := $(shell git symbolic-ref --short -q HEAD 2>/dev/null || printf detached)
+DEV_COMMIT := $(shell git rev-parse --short=12 HEAD)
+DEV_VERSION := devel-$(DEV_BRANCH)@$(DEV_COMMIT)
 
 build:
 	go build ./...
 
 install:
 	go install ./...
+
+install-dev:
+	go build -ldflags "-X github.com/sqlc-dev/sqlc/internal/cmd.version=$(DEV_VERSION) -X github.com/sqlc-dev/sqlc/internal/info.Version=$(DEV_VERSION)" -o $(HOME)/bin/sqlc-dev ./cmd/sqlc/
 
 test:
 	go test ./...

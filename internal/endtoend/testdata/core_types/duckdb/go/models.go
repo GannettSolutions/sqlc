@@ -6,6 +6,7 @@ package querytest
 
 import (
 	"database/sql"
+	"encoding/json"
 	"math/big"
 
 	"github.com/duckdb/duckdb-go/v2"
@@ -32,7 +33,7 @@ type Thing struct {
 	Tstz   sql.NullTime
 	Tsns   sql.NullTime
 	Iv     *duckdb.Interval
-	Doc    sql.NullString
+	Doc    json.RawMessage
 	Grid   duckdb.Composite[[][]int32]
 	Vi     *big.Int
 	F4     sql.NullFloat64

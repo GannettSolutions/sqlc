@@ -210,7 +210,7 @@ WHERE class_oid = ?
 ORDER BY num;
 
 -- name: ListClassColumns :many
-SELECT a.name AS column_name, a.type_oid, a.not_null
+SELECT a.name AS column_name, a.type_oid, a.not_null, a.decl_type
 FROM sql_attribute a
 JOIN sql_type t ON t.oid = a.type_oid
 WHERE a.class_oid = ? AND a.hidden = 0
