@@ -490,6 +490,7 @@ func (i *importer) batchImports() fileImports {
 			batchQueries = append(batchQueries, q)
 		}
 	}
+	sqlpkg := parseDriver(i.Options.SqlPackage)
 	std, pkg := buildImports(i.Options, batchQueries, func(name string) bool {
 		for _, q := range batchQueries {
 			if q.hasRetType() {
@@ -504,7 +505,11 @@ func (i *importer) batchImports() fileImports {
 					return true
 				}
 			}
-			if q.Arg.EmitStruct() {
+			// Batch parameter structs are declared in the batch file even when
+			// query_parameter_limit would normally expand them into arguments.
+			// The DuckDB database/sql batch implementation needs their field
+			// imports there as well. Keep pgx import behavior unchanged.
+			if q.Arg.EmitStruct() || (!sqlpkg.IsPGX() && i.Engine == engineDuckDB && q.Cmd == metadata.CmdBatchExec && q.Arg.IsStruct()) {
 				for _, f := range q.Arg.Struct.Fields {
 					if hasPrefixIgnoringSliceAndPointerPrefix(f.Type, name) {
 						return true
@@ -522,7 +527,6 @@ func (i *importer) batchImports() fileImports {
 
 	std["context"] = struct{}{}
 	std["errors"] = struct{}{}
-	sqlpkg := parseDriver(i.Options.SqlPackage)
 	switch sqlpkg {
 	case opts.SQLDriverPGXV4:
 		pkg[ImportSpec{Path: "github.com/jackc/pgx/v4"}] = struct{}{}

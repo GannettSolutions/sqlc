@@ -1,0 +1,78 @@
+{{define "batchCodeStd"}}
+
+var (
+	ErrBatchAlreadyClosed = errors.New("batch already closed")
+)
+
+{{range .GoQueries}}
+{{if eq .Cmd ":batchexec"}}
+const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
+{{escape .SQL}}
+{{$.Q}}
+
+type {{.MethodName}}BatchResults struct {
+	ctx    context.Context
+	db     DBTX
+	{{- if $.EmitPreparedQueries}}
+	q      *Queries
+	{{- end}}
+	args   []{{.Arg.DefineType}}
+	closed bool
+}
+
+{{if .Arg.Struct}}
+type {{.Arg.Type}} struct { {{- range .Arg.Struct.Fields}}
+  {{.Name}} {{.Type}} {{if .Tag}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
+  {{- end}}
+}
+{{end}}
+
+{{range .Comments}}//{{.}}
+{{end -}}
+func (q *Queries) {{.MethodName}}(ctx context.Context, {{if $.EmitMethodsWithDBArgument}}db DBTX, {{end}}{{.Arg.SlicePair}}) *{{.MethodName}}BatchResults {
+	return &{{.MethodName}}BatchResults{
+		ctx:  ctx,
+		db:   {{if $.EmitMethodsWithDBArgument}}db{{else}}q.db{{end}},
+		{{- if $.EmitPreparedQueries}}
+		q:    q,
+		{{- end}}
+		args: {{.Arg.Name}},
+	}
+}
+
+func (b *{{.MethodName}}BatchResults) Exec(f func(int, error)) {
+	defer b.Close()
+	for t, a := range b.args {
+		if b.closed {
+			if f != nil {
+				f(t, ErrBatchAlreadyClosed)
+			}
+			continue
+		}
+		vals := []any{
+		{{- if .Arg.Struct}}
+		{{- range .Arg.Struct.Fields}}
+			a.{{.Name}},
+		{{- end}}
+		{{- else}}
+			a,
+		{{- end}}
+		}
+		{{- if $.EmitPreparedQueries}}
+		_, err := b.q.exec(b.ctx, b.q.{{.FieldName}}, {{.ConstantName}}, vals...)
+		{{- else}}
+		_, err := b.db.ExecContext(b.ctx, {{.ConstantName}}, vals...)
+		{{- end}}
+		if f != nil {
+			f(t, err)
+		}
+	}
+}
+
+func (b *{{.MethodName}}BatchResults) Close() error {
+	b.closed = true
+	return nil
+}
+{{end}}
+{{end}}
+{{end}}

@@ -21,6 +21,7 @@ type tmplCtx struct {
 	Q             string
 	Package       string
 	ModelsPackage string
+	Engine        string
 	SQLDriver     opts.SQLDriver
 	Enums         []Enum
 	Structs       []Struct
@@ -187,6 +188,7 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 		UsesCopyFrom:              usesCopyFrom(queries),
 		UsesBatch:                 usesBatch(queries),
 		SQLDriver:                 parseDriver(options.SqlPackage),
+		Engine:                    req.Settings.Engine,
 		Q:                         "`",
 		Package:                   options.Package,
 		ModelsPackage:             options.ModelsPackage(),
@@ -210,7 +212,14 @@ func generate(req *plugin.GenerateRequest, options *opts.Options, enums []Enum, 
 	}
 
 	if tctx.UsesBatch && !tctx.SQLDriver.IsPGX() {
-		return nil, errors.New(":batch* commands are only supported by pgx")
+		for _, q := range queries {
+			if q.Cmd == metadata.CmdBatchExec && req.Settings.Engine == engineDuckDB {
+				continue
+			}
+			if slices.Contains([]string{metadata.CmdBatchExec, metadata.CmdBatchMany, metadata.CmdBatchOne}, q.Cmd) {
+				return nil, errors.New(":batch* commands are only supported by pgx")
+			}
+		}
 	}
 
 	funcMap := template.FuncMap{

@@ -1,6 +1,7 @@
 {{define "queryCodeStd"}}
 {{range .GoQueries}}
 {{if $.OutputQuery .SourceName}}
+{{if ne (hasPrefix .Cmd ":batch") true}}
 const {{.ConstantName}} = {{$.Q}}-- name: {{.MethodName}} {{.Cmd}}
 {{escape .SQL}}
 {{$.Q}}
@@ -17,6 +18,7 @@ type {{.Ret.Type}} struct { {{- range .Ret.Struct.Fields}}
   {{.Name}} {{.Type}} {{if .Tag}}{{$.Q}}{{.Tag}}{{$.Q}}{{end}}
   {{- end}}
 }
+{{end}}
 {{end}}
 
 {{if eq .Cmd ":one"}}

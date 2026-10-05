@@ -250,5 +250,7 @@ import (
 {{define "batchCode"}}
 {{if .SQLDriver.IsPGX }}
     {{- template "batchCodePgx" .}}
+{{else if eq .Engine "duckdb"}}
+    {{- template "batchCodeStd" .}}
 {{end}}
 {{end}}

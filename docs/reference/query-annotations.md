@@ -115,7 +115,8 @@ func (q *Queries) GetAuthor(ctx context.Context, id int64) (Author, error) {
 
 ## `:batchexec`
 
-__NOTE: This command only works with PostgreSQL using the `pgx/v4` and `pgx/v5` drivers and outputting Go code.__
+__NOTE: This command works with PostgreSQL using the `pgx/v4` and `pgx/v5`
+drivers, and with DuckDB using the Go `database/sql` driver.__
 
 The generated method will return a batch object. The batch object will have
 the following methods:
@@ -144,6 +145,12 @@ func (b *DeleteBookBatchResults) Close() error {
 	//...
 }
 ```
+
+With DuckDB's `database/sql` driver, `Exec` executes batch entries
+sequentially. It does not automatically start a transaction, so batches may
+partially succeed when an error leaves earlier entries successfully applied.
+Callers can use `WithTx` to execute the batch in a transaction when atomicity
+is required.
 
 ## `:batchmany`
 
